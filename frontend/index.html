@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Порекомендувати кандидата</title>
+<style>
+  :root {
+    --ink: #1c2321;
+    --ink-soft: #5b6560;
+    --paper: #f6f5f1;
+    --card: #ffffff;
+    --line: #dcdad2;
+    --accent: #2f5d50;
+    --accent-soft: #e4ece8;
+    --error: #a3402f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 48px 20px 80px; }
+  h1 { font-size: 26px; font-weight: 600; margin: 0 0 6px; }
+  p.lead { color: var(--ink-soft); margin: 0 0 32px; line-height: 1.5; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 32px; }
+  fieldset { border: none; padding: 0; margin: 0 0 24px; }
+  legend { font-weight: 600; font-size: 14px; margin-bottom: 12px; padding: 0; }
+  label { display: block; font-size: 14px; margin: 16px 0 6px; }
+  input[type=text], input[type=email], input[type=tel], select, textarea {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+    font-size: 15px; font-family: inherit; background: #fff; color: var(--ink);
+  }
+  textarea { min-height: 90px; resize: vertical; }
+  .toggle-row { display: flex; gap: 10px; margin-bottom: 8px; }
+  .toggle-row button {
+    flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--line);
+    background: #fff; cursor: pointer; font-size: 14px; color: var(--ink-soft);
+  }
+  .toggle-row button.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .file-row { display: flex; align-items: center; gap: 10px; }
+  .file-row input[type=file] { font-size: 13px; }
+  button[type=submit] {
+    width: 100%; margin-top: 24px; padding: 14px; border: none; border-radius: 8px;
+    background: var(--accent); color: #fff; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  button[type=submit]:disabled { opacity: 0.6; cursor: default; }
+  #status { margin-top: 16px; font-size: 14px; }
+  #status.error { color: var(--error); }
+  #status.success { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Порекомендувати кандидата</h1>
+  <p class="lead">Заповніть форму нижче — ми одразу підтвердимо отримання і повідомимо про подальший статус окремим листом.</p>
+
+  <div class="card">
+    <form id="referral-form">
+      <fieldset>
+        <legend>Хто ви?</legend>
+        <div class="toggle-row" id="employee-toggle">
+          <button type="button" data-value="true" class="active">Я співробітник</button>
+          <button type="button" data-value="false">Я не працюю в компанії</button>
+        </div>
+        <label for="referrerName">Ваше ім'я</label>
+        <input type="text" id="referrerName" required>
+        <label for="referrerContact">Ваш email</label>
+        <input type="email" id="referrerContact" required>
+      </fieldset>
+
+      <fieldset>
+        <legend>Кого ви рекомендуєте?</legend>
+        <label for="positionId">Вакансія</label>
+        <select id="positionId" required><option value="">Завантаження вакансій…</option></select>
+        <label for="candidateName">Ім'я кандидата</label>
+        <input type="text" id="candidateName" required>
+        <label for="candidateContact">Email або телефон кандидата</label>
+        <input type="text" id="candidateContact" required>
+        <label for="comment">Чому ви рекомендуєте цю людину?</label>
+        <textarea id="comment" placeholder="Коротко: звідки знаєте, чому підходить"></textarea>
+        <label for="resume">CV кандидата (за наявності)</label>
+        <div class="file-row"><input type="file" id="resume" accept=".pdf,.doc,.docx"></div>
+      </fieldset>
+
+      <button type="submit" id="submit-btn">Надіслати рекомендацію</button>
+      <div id="status"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // TODO: replace with your deployed Worker URL
+  const BACKEND_URL = 'https://referral-backend.YOUR-SUBDOMAIN.workers.dev';
+
+  let isEmployee = true;
+  document.querySelectorAll('#employee-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#employee-toggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      isEmployee = btn.dataset.value === 'true';
+    });
+  });
+
+  async function loadPositions() {
+    const select = document.getElementById('positionId');
+    try {
+      const res = await fetch(`${BACKEND_URL}/positions`);
+      const positions = await res.json();
+      select.innerHTML = '<option value="">Оберіть вакансію…</option>' +
+        positions.map(p => `<option value="${p.id}" data-name="${p.name}">${p.name}</option>`).join('');
+    } catch (e) {
+      select.innerHTML = '<option value="">Не вдалось завантажити вакансії</option>';
+    }
+  }
+  loadPositions();
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  document.getElementById('referral-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submit-btn');
+    const status = document.getElementById('status');
+    btn.disabled = true;
+    status.textContent = '';
+    status.className = '';
+
+    const positionSelect = document.getElementById('positionId');
+    const resumeFile = document.getElementById('resume').files[0];
+
+    const payload = {
+      isEmployee,
+      referrerName: document.getElementById('referrerName').value,
+      referrerContact: document.getElementById('referrerContact').value,
+      positionId: positionSelect.value,
+      positionName: positionSelect.selectedOptions[0]?.dataset.name || '',
+      candidateName: document.getElementById('candidateName').value,
+      candidateContact: document.getElementById('candidateContact').value,
+      comment: document.getElementById('comment').value,
+      resumeFileName: resumeFile ? resumeFile.name : null,
+      resumeBase64: resumeFile ? await fileToBase64(resumeFile) : null
+    };
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || 'Сталася помилка');
+      status.textContent = 'Дякуємо! Рекомендацію надіслано — на ваш email прийде підтвердження.';
+      status.className = 'success';
+      e.target.reset();
+    } catch (err) {
+      status.textContent = 'Не вдалося надіслати. Спробуйте ще раз або напишіть нам напряму.';
+      status.className = 'error';
+    } finally {
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+name = "referral-backend"
+main = "src/worker.js"
+compatibility_date = "2026-01-01"
+
+# Secrets are NOT set here — set them with:
+#   wrangler secret put BREEZY_API_TOKEN
+#   wrangler secret put BREEZY_COMPANY_ID
+#   wrangler secret put SHEETS_BRIDGE_URL
+#   wrangler secret put SHEETS_BRIDGE_SECRET
+#   wrangler secret put BREEZY_WEBHOOK_SECRET
