@@ -72,18 +72,19 @@ async function handleSubmit(request, env, cors) {
   // positionId, positionName, comment, resumeBase64 (optional), resumeFileName (optional)
 
   const referralType = form.isEmployee ? 'внутрішня' : 'зовнішня';
+  const sourceLabel = form.isEmployee ? 'Внутрішня рекомендація' : 'Зовнішня рекомендація';
 
   const candidatePayload = {
     name: form.candidateName,
     email_address: form.candidateContact,
-    origin: 'referral',
-    headline: `${referralType === 'внутрішня' ? 'Внутрішня' : 'Зовнішня'} рекомендація від ${form.referrerName} (${form.referrerContact})`,
+    source: sourceLabel,
+    headline: `${sourceLabel} від ${form.referrerName} (${form.referrerContact})`,
     cover_letter: form.comment || ''
-    // TODO: `referred_by` in Breezy's candidate model expects an existing Breezy USER id,
-    // so it only reliably works for internal employees who already have Breezy accounts.
-    // Test in your sandbox position: if form.isEmployee, try looking up the user by email
-    // via GET /company/{id}/members and pass their _id here. For external referrers,
-    // the headline field above is the reliable place to record who referred them.
+    // Verified live against the BetterMe account: `origin` is ignored by Breezy (always
+    // comes back as "sourced"), and `referred_by` is dropped silently even with a real
+    // Breezy user id — it isn't settable through this endpoint at all. `source` (above) IS
+    // respected and shows up as the Source column/filter in Breezy. Headline stays the
+    // reliable place to record who the actual referrer is, for both internal and external.
   };
 
   const createRes = await fetch(
