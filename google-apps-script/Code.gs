@@ -185,6 +185,15 @@ function registerBreezyWebhook_() {
   Logger.log(res.getContentText());
 }
 
+// Run this ONCE manually from the Apps Script editor (select it in the function dropdown,
+// click Run) to trigger Google's permission prompt for external requests / Sheets / Gmail.
+// Functions ending in "_" are treated as private and don't show up in that dropdown — this
+// one deliberately has no trailing underscore so it's selectable.
+function authorizeScript() {
+  Logger.log('BREEZY_COMPANY_ID set: ' + !!props_().getProperty('BREEZY_COMPANY_ID'));
+  Logger.log('Positions from Breezy: ' + JSON.stringify(listPositions_()));
+}
+
 // ---- Google Sheet ----
 
 function getSheet_() {
