@@ -92,8 +92,8 @@
 </div>
 
 <script>
-  // TODO: replace with your deployed Worker URL
-  const BACKEND_URL = 'https://referral-backend.YOUR-SUBDOMAIN.workers.dev';
+  // Google Apps Script Web App exec URL (google-apps-script/Code.gs), one route per param
+  const BACKEND_URL = 'https://script.google.com/a/macros/betterme.world/s/AKfycbxfarLslcr2ovaHZKPwGyQ0wS03M30QBNvv0NeAudYhc2oRp1N70FjVqhqG233bqc9Z/exec';
 
   let isEmployee = true;
   document.querySelectorAll('#employee-toggle button').forEach(btn => {
@@ -107,7 +107,7 @@
   async function loadPositions() {
     const select = document.getElementById('positionId');
     try {
-      const res = await fetch(`${BACKEND_URL}/positions`);
+      const res = await fetch(`${BACKEND_URL}?route=positions`);
       const positions = await res.json();
       select.innerHTML = '<option value="">Оберіть вакансію…</option>' +
         positions.map(p => `<option value="${p.id}" data-name="${p.name}">${p.name}</option>`).join('');
@@ -151,9 +151,12 @@
     };
 
     try {
-      const res = await fetch(`${BACKEND_URL}/submit`, {
+      // Content-Type text/plain keeps this a CORS "simple request" (no preflight) —
+      // Apps Script web apps can't respond to an OPTIONS preflight. Code.gs still
+      // parses the body as JSON regardless of the declared content type.
+      const res = await fetch(`${BACKEND_URL}?route=submit`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(payload)
       });
       const data = await res.json();

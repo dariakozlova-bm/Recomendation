@@ -78,13 +78,12 @@ async function handleSubmit(request, env, cors) {
     name: form.candidateName,
     email_address: form.candidateContact,
     source: sourceLabel,
-    headline: `${sourceLabel} від ${form.referrerName} (${form.referrerContact})`,
-    cover_letter: form.comment || ''
+    headline: form.candidateName,
+    cover_letter: `Рекомендує: ${form.referrerName} (${form.referrerContact})\n\n${form.comment || ''}`
     // Verified live against the BetterMe account: `origin` is ignored by Breezy (always
     // comes back as "sourced"), and `referred_by` is dropped silently even with a real
     // Breezy user id — it isn't settable through this endpoint at all. `source` (above) IS
-    // respected and shows up as the Source column/filter in Breezy. Headline stays the
-    // reliable place to record who the actual referrer is, for both internal and external.
+    // respected and shows up as the Source column/filter in Breezy.
   };
 
   const createRes = await fetch(
