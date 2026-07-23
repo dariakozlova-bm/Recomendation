@@ -6,9 +6,9 @@
  * TODO: replace with your real Sheet ID (from the Sheet's URL) and email texts below.
  */
 
-const SHEET_ID = 'TODO_PASTE_YOUR_GOOGLE_SHEET_ID_HERE';
+const SHEET_ID = '10d5ww46JmUL7Dt56j7X4-8-cYJz5y5pgMGg8UMjWLbk';
 const SHEET_NAME = 'Referrals';
-const SHARED_SECRET = 'TODO_SET_A_RANDOM_SHARED_SECRET'; // must match SHEETS_BRIDGE_SECRET in the Worker
+const SHARED_SECRET = '4e7a73da6ea2c84202bf5aa5b9be464a101a95c1d35908d8'; // must match SHEETS_BRIDGE_SECRET in the Worker
 
 // TODO: adjust wording to match your tone. These go to the REFERRER, not the candidate.
 const EMAIL_TEMPLATES = {
