@@ -55,12 +55,11 @@ export default {
 // ---- GET /positions ----
 async function handlePositions(env, cors) {
   const res = await fetch(
-    `${BREEZY_BASE}/company/${env.BREEZY_COMPANY_ID}/positions?state=active`,
+    `${BREEZY_BASE}/company/${env.BREEZY_COMPANY_ID}/positions?state=published`,
     { headers: { Authorization: env.BREEZY_API_TOKEN } }
   );
   const positions = await res.json();
-  // TODO: confirm the exact field names in the response (checked against your account) —
-  // mapping assumes each item has `_id` and `name`.
+  // Confirmed against the BetterMe account: each item has `_id` and `name`.
   const simplified = (positions || []).map(p => ({ id: p._id, name: p.name }));
   return json(simplified, 200, cors);
 }
