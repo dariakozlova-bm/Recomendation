@@ -190,8 +190,12 @@ function registerBreezyWebhook_() {
 // Functions ending in "_" are treated as private and don't show up in that dropdown — this
 // one deliberately has no trailing underscore so it's selectable.
 function authorizeScript() {
+  Logger.log('BREEZY_API_TOKEN set: ' + !!props_().getProperty('BREEZY_API_TOKEN'));
   Logger.log('BREEZY_COMPANY_ID set: ' + !!props_().getProperty('BREEZY_COMPANY_ID'));
-  Logger.log('Positions from Breezy: ' + JSON.stringify(listPositions_()));
+  const companyId = props_().getProperty('BREEZY_COMPANY_ID');
+  const res = breezyFetch_(`/company/${companyId}/positions?state=published`);
+  Logger.log('Breezy response code: ' + res.getResponseCode());
+  Logger.log('Breezy response body: ' + res.getContentText().slice(0, 800));
 }
 
 // ---- Google Sheet ----
